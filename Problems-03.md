@@ -1,63 +1,101 @@
 # 3. Обработка на текст
 
 ## 1. Сортирайте /etc/passwd лексикографски по поле UserID.
-    sort -t ':' -k 3 /etc/passwd
+```bash
+sort -t ':' -k 3 /etc/passwd
+```
 
 ## 2. Сортирайте /etc/passwd числово по поле UserID. (Открийте разликите с лексикографската сортировка)
-    sort -t ':' -k 3 -n /etc/passwd
+```bash
+sort -t ':' -k 3 -n /etc/passwd
+```
 
 ## 3. Изведете само 1-ва и 5-та колона на файла /etc/passwd спрямо разделител ":".
-    cut -d ':' -f 1,5  /etc/passwd
+```bash
+cut -d ':' -f 1,5  /etc/passwd
+```
 
 ## 4. Изведете съдържанието на файла /etc/passwd от 2-ри до 6-ти символ.
-    head -c6 /etc/passwd | tail -c5
+```bash
+head -c6 /etc/passwd | tail -c5
+```
 
 ## 5. Намерете броя на символите в /etc/passwd. А колко реда има в /etc/passwd?
-    wc -m /etc/passwd
-    wc -l /etc/passwd
+```bash
+wc -m /etc/passwd
+wc -l /etc/passwd
+```
 
 ## 6. Извадете от файл /etc/passwd:
 ### 6.1. първите 12 реда
-    head -n 12 /etc/passwd
+```bash
+head -n 12 /etc/passwd
+```
 ### 6.2. първите 26 символа
-    head -c 26 /etc/passwd
+```bash
+head -c 26 /etc/passwd
+```
 ### 6.3. всички редове, освен последните 4
-    head -n -4 /etc/passwd
+```bash
+head -n -4 /etc/passwd
+```
 ### 6.4. последните 17 реда
-    tail -n 17 /etc/passwd
+```bash
+tail -n 17 /etc/passwd
+```
 ### 6.5. 13-я ред (или друг произволен, ако нямате достатъчно редове)
-    sed -n '13p' /etc/passwd
+```bash
+sed -n '13p' /etc/passwd
+```
 ### 6.6. последните 4 символа от 13-ти ред
-    sed -n '13p' /etc/passwd | tail -c4
+```bash
+sed -n '13p' /etc/passwd | tail -c4
+```
 
 ## 7. Отпечатайте потребителските имена и техните home директории от /etc/passwd.
-    cut -d ':' -f1,6 /etc/passwd | tr ':' ' '
+```bash
+cut -d ':' -f1,6 /etc/passwd | tr ':' ' '
+```
 
 ## 8. Отпечатайте втората колона на /etc/passwd, разделена спрямо символ '/'.
-    cut -d '/' -f2 /etc/passwd
+```bash
+cut -d '/' -f2 /etc/passwd
+```
 
 ## 9. Запаметете във файл в своята home директория резултатът от командата ls -l изпълнена за вашата home директорията. Сортирайте създадения файла по второ поле (numeric, alphabetically).
-    sort -k 2 -n output.txt -o output.txt
+```bash
+sort -k 2 -n output.txt -o output.txt
+```
 
 ## 10. Отпечатайте 2 реда над вашия ред в /etc/passwd и 3 реда под него // може да стане и без пайпове
-    egrep $(whoami) -A 3 -B 2 /etc/passwd
+```bash
+egrep $(whoami) -A 3 -B 2 /etc/passwd
+```
 
 ## 11. Колко хора не се казват Ivan според /etc/passwd
-    egrep -v -c '\<Ivan\>' passwd.txt
+```bash
+egrep -v -c '\<Ivan\>' passwd.txt
+```
 
 ## 12. Изведете имената на хората с второ име по-дълго от 7 (>7) символа според /etc/passwd
-    cut -d ':' -f 5 passwd.txt | cut -d ' ' -f 2 | tr -d ',' | egrep '.{7,}'
+```bash
+cut -d ':' -f 5 passwd.txt | cut -d ' ' -f 2 | tr -d ',' | egrep '.{7,}'
+```
 
 ## 13. Изведете имената на хората с второ име по-късо от 8 (<=7) символа според /etc/passwd // !(>7) = ?
-    cut -d ':' -f 5 passwd.txt | cut -d ' ' -f 2 | tr -d ',' | egrep -v '.{7,}'
+```bash
+cut -d ':' -f 5 passwd.txt | cut -d ' ' -f 2 | tr -d ',' | egrep -v '.{7,}'
+```
 
 ## 14. Изведете целите редове от /etc/passwd за хората от 03-a-5003
-```
+```bash
 egrep '^[^:]*:[^:]*:[^:]*:[^:]*:[[:alnum:]]* +[[:alnum:]]{,7}[,:]+' passwd.txt
 ```
 
 ## 15. Намерете факултетния си номер във файлa /etc/passwd.
-    egrep -i 'kiril golov' passwd.txt | cut -d ':' -f 1 | tail -c +2
+```bash
+egrep -i 'kiril golov' passwd.txt | cut -d ':' -f 1 | tail -c +2
+```
 
 ## 16. Запазете само потребителските имена от /etc/passwd във файл users във вашата home директория.
 
@@ -73,13 +111,13 @@ egrep '^[[:alnum:]]*[[:space:]]+27374/' /etc/services | cut -f 1 | sort | uniq
 ```
 
 ## 19. Колко файлове в /bin са shell script? (Колко файлове в дадена директория са ASCII text?)
-```
+```bash
 file /bin/* | egrep -c 'shell script'
 file /bin/* | egrep -c 'ASCII text'
 ```
 
 ## 20. Направете списък с директориите на вашата файлова система, до които нямате достъп. Понеже файловата система може да е много голяма, търсете до 3 нива на дълбочина. А до кои директории имате достъп? Колко на брой са директориите, до които нямате достъп?
-```
+```bash
 find / -maxdepth 3 -type d 2>&1 | egrep 'Permission denied' | cut -d ':' -f 2 | cut -c5- | sed 's/.$//'
 find / -maxdepth 3 -type d 2>&1 | egrep -v 'Permission denied'
 find / -maxdepth 3 -type d 2>&1 | egrep -c 'Permission denied'
@@ -92,18 +130,23 @@ find / -maxdepth 3 -type d 2>&1 | egrep -c 'Permission denied'
 /home/s...../dir1/file3**
 
 Посредством vi въведете следното съдържание:
-**file1:**```
+**file1:**
+```
 1
 2
-3```
+3
+```
 
-**file2:**```
+**file2:**
+```
 s
 a
 d
-f```
+f
+```
 
-**file3:**```
+**file3:**
+```
 3
 2
 1
@@ -111,42 +154,55 @@ f```
 42
 14
 1
-52```
+52
+```
 
 ## 22. Във file2 подменете всички малки букви с главни.
-```
+```bash
 sed -i 's/[a-z]/\U&/g' file2
 ```
 
 ## 23. Във file3 изтрийте всички "1"-ци.
-```
+```bash
 sed -i 's/1//g' file3
 ```
 
 ## 24. Изведете статистика за най-често срещаните символи в трите файла.
-```
+```bash
 grep -o . file1 file2 file3  | cut -d ':' -f 2 | sort | uniq -c | sort -k 1 -n -r | head -n 1 | tr -s ' ' | cut -d ' ' -f 3
 ```
 
 ## 25. Направете нов файл с име по ваш избор, който е конкатенация от file{1,2,3}. Забележка: съществува решение с едно извикване на определена програма - опитайте да решите задачата чрез него.
-    cat file1 file2 file3 > file
+```bash
+cat file1 file2 file3 > file
+```
 
 ## 26. Прочетете текстов файл file1 и направете всички главни букви малки като запишете резултата във file2.
-    tr 'A-Z' 'a-z' < file1 > file2
+```bash
+tr 'A-Z' 'a-z' < file1 > file2
+```
 
 ## 27. Изтрийте всички срещания на буквата 'a' (lower case) в /etc/passwd и намерете броят на оставащите символи.
-    tr -d 'a' < passwd.txt | wc -m
+```bash
+tr -d 'a' < passwd.txt | wc -m
+```
 
 ## 28. Намерете броя на уникалните символи, използвани в имената на потребителите от /etc/passwd.
-```
+```bash
 cut -d ':' -f 1 passwd.txt | egrep -o . | sort | uniq -c | egrep '^[[:space:]]*1 +' | tr -s ' ' | cut -d ' ' -f 3
 ```
 
 ## 29. Отпечатайте всички редове на файла /etc/passwd, които не съдържат символния низ 'ov'.
-    egrep -v -c 'ov' passwd.txt
+```bash
+egrep -v -c 'ov' passwd.txt
+```
 
 ## 30. Отпечатайте последната цифра на UID на всички редове между 28-ми и 46-ред в /etc/passwd.
-    head -n 46 passwd.txt | tail -n +28 | cut -d ':' -f 3 | rev | cut -c1
+```bash
+head -n 46 passwd.txt | tail -n +28 | cut -d ':' -f 3 | rev | cut -c1
+```
 
 ## 31. Отпечатайте правата (permissions) и имената на всички файлове, до които имате read достъп, намиращи се в директорията /tmp.
-    find /tmp -type f -readable 2> /dev/null
+```bash
+find /tmp -type f -readable 2> /dev/null
+```
