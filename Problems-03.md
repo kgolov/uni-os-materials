@@ -124,10 +124,11 @@ find / -maxdepth 3 -type d 2>&1 | egrep -c 'Permission denied'
 ```
 
 ## 21. Създайте следната файлова йерархия.
-
-**/home/s...../dir1/file1
+```
+/home/s...../dir1/file1
 /home/s...../dir1/file2
-/home/s...../dir1/file3**
+/home/s...../dir1/file3
+```
 
 Посредством vi въведете следното съдържание:
 **file1:**
