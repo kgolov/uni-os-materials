@@ -254,26 +254,31 @@ find / -type f -name '*.sh' 2> /dev/null -exec egrep -a '^#!' {} \; | sed 's/! \
 
 ### 40. Направете файл eternity. Намерете всички файлове, които са били модифицирани в последните 15мин (по възможност изключете .).  Запишете във eternity името на файла и часa на последната промяна.
 ```bash
+find ~ -type f -mmin -15 2> /dev/null -fprintf eternity "%TX\t%p\n"
 ```
 
 ### 41. Копирайте файл /home/tony/population.csv във вашата home директория.
-```bash
-```
 
 ### 42. Използвайки файл population.csv, намерете колко е общото население на света през 2008 година. А през 2016?
 ```bash
+cat population.csv | awk -M -F ',' '$3 ~ "2008" {sum += $4} END  {print sum}'
+cat population.csv | awk -M -F ',' '$3 ~ "2016" {sum += $4} END  {print sum}'
 ```
 
 ### 43. Използвайки файл population.csv, намерете през коя година в България има най-много население.
 ```bash
+egrep -a 'Bulgaria' population.csv | sort -t ',' -k 4 -n -r | head -n 1 | cut -d ',' -f 3
 ```
 
 ### 44. Използвайки файл population.csv, намерете коя държава има най-много население през 2016. А коя е с най-малко население? (Hint: Погледнете имената на държавите)
 ```bash
+egrep -a ',2016,' population.csv | sort -t ',' -k 4 -n -r | head -n 1 | cut -d ',' -f 1
+egrep -a ',2016,' population.csv | sort -t ',' -k 4 -n -r | tail -n 1 | cut -d ',' -f 1
 ```
 
 ### 45. Използвайки файл population.csv, намерете коя държава е на 42-ро място по население през 1969. Колко е населението й през тази година?
 ```bash
+egrep -a ',1969,' population.csv | sort -t ',' -k 4 -n -r | head -n 42 | tail -n 1 | awk -F ',' '{print $1, $4}'
 ```
 
 ### 46. В home директорията си изпълнете командата
