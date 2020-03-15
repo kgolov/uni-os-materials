@@ -261,8 +261,8 @@ find ~ -type f -mmin -15 2> /dev/null -fprintf eternity "%TX\t%p\n"
 
 ### 42. Използвайки файл population.csv, намерете колко е общото население на света през 2008 година. А през 2016?
 ```bash
-cat population.csv | awk -M -F ',' '$3 ~ "2008" {sum += $4} END  {print sum}'
-cat population.csv | awk -M -F ',' '$3 ~ "2016" {sum += $4} END  {print sum}'
+cat population.csv | awk -M -F ',' '$3 ~ "2008" {sum += $4} END {print sum}'
+cat population.csv | awk -M -F ',' '$3 ~ "2016" {sum += $4} END {print sum}'
 ```
 
 ### 43. Използвайки файл population.csv, намерете през коя година в България има най-много население.
@@ -318,7 +318,7 @@ find songs -type f | egrep -o '/.* \-' | egrep -o '[[:alpha:]]+.*[[:alpha:]]+' |
 
 ### 53. Напишете серия от команди, които извеждат детайли за файловете и директориите в текущата директория, които имат същите права за достъп както най-големият файл в /etc директорията.
 ```bash
-find . stat -perm $(find /etc -type f -printf "%s %m\n" 2> /dev/null | sort -n -r | head -n 1 | cut -d ' ' -f 2) -exec ls -l {} +
+find . -perm $(find /etc -type f -printf "%s %m\n" 2> /dev/null | sort -n -r | head -n 1 | cut -d ' ' -f 2) -exec ls -l {} +
 ```
 
 ### 54. Дадени са ви 2 списъка с email адреси - първият има 12 валидни адреса, а вторията има само невалидни. Филтрирайте всички адреси, така че да останат само валидните. Колко кратък регулярен израз можете да направите за целта? Примери:
