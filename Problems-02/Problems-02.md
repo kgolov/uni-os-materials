@@ -122,5 +122,5 @@ find ~ -type f 2> /dev/null -exec wc -l {} \; | sort -n -r
 ### 24. Копирайте най-големия файл от тези, намиращи се в /tmp/os2018/02/bytes/, в home директорията си.
 ***Забележка: ще търсим най-големият файл в /bin***
 ```bash
-find /bin -type f -exec ls -l {} + | tr -s ' '| sort -k 5 -n -r | head -n 1 | cut -d ' ' -f 9 | xargs -I{} cp {} ~
+find /bin -type f -printf "%s %p\n" 2> /dev/null | sort -n -r | head -n 1 | cut -d ' ' -f 2 | xargs -I{} cp {} ~
 ```
