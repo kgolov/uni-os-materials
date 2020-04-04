@@ -4,6 +4,7 @@
 1. Упражнение 2. [Работа с файлове](Problems-02/Problems-02.md)
 2. Упражнение 3. [Обработка на текст](Problems-03/Problems-03.md)
 3. Упражнение 4. [Процеси](Problems-04/Problems-04.md)
+4. Упражнение 5. [Скриптове](Problems-05/Problems-05.md)
 
 ### 2. Материали от подготовка за контролни
 1. [Контролно 1](Exam-Problems/Exam-Problem-Solutions.md)
