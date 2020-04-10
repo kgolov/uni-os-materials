@@ -215,7 +215,7 @@ if [ ! -r "${BOOK}" ]; then
         exit 2
 fi
 
-USER="$(egrep -a "^([^:]*:){4}${NAME}(;|,)" ${PASSWD} | cut -d ':' -f 1)"
+USER="$(egrep -a "^([^:]*:){4}${NAME}(:|,)" ${PASSWD} | cut -d ':' -f 1)"
 
 if [ -z "${USER}" ]; then
         echo "User with such name is not found"
