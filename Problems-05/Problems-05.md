@@ -101,8 +101,16 @@ echo "Paste completed successfully in file: $output"
 
 ### 9. Да се напише shell скрипт, който чете от стандартния вход име на файл и символен низ, проверява дали низа се съдържа във файла и извежда на стандартния изход кода на завършване на командата с която сте проверили наличието на низа.
 **NB! Символният низ може да съдържа интервал (' ') в себе си.**
-```bash
 
+**task-09.sh**
+```bash
+#!/bin/bash
+
+read -p "Enter full path to file: " FILENAME
+read -p "Enter phrase to search for: " NEEDLE
+
+grep -qsF "${NEEDLE}" "${FILENAME}"
+echo $?
 ```
 
 ### 10. Имате компилируем (a.k.a няма синтактични грешки) source file на езика C. Напишете shell script, който да покaзва колко е дълбоко най-дълбокото nest-ване (влагане).
@@ -325,8 +333,30 @@ exit 0
 * **1**, когато числото не попада в интервала
 * **0**, когато числото попада в интервала
 
+**task-15.sh**
 ```bash
+#!/bin/bash
 
+if [ $# -ne 3 ]; then
+	echo "You must supply 3 arguments"
+	exit 4
+fi
+
+if (! echo $1 | grep -q "^[0-9]*$") || (! echo $2 | grep -q "^[0-9]*$") || (! echo $3 | grep -q "^[0-9]$"); then
+	echo "One of your numbers is not an integer"
+	exit 3
+fi
+
+if [ $2 -gt $3 ]; then
+	echo "The interval start and end are flipped"
+	exit 2
+fi
+
+if [ $1 -lt $2 ] || [ $1 -gt $3 ]; then
+	echo "The number is not in the interval"
+	exit 1
+fi
+
+echo "The number is in the interval"
+exit 0
 ```
-
-### 16.
