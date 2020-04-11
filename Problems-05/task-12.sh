@@ -16,12 +16,36 @@ if [ ! -r "${BOOK}" ]; then
 	exit 2
 fi
 
-USER="$(egrep -a "^([^:]*:){4}${NAME}(:|,)" ${PASSWD} | cut -d ':' -f 1)"
+USERS="$(egrep -a "^([^:]*:){4}${NAME}(:|,)" ${PASSWD})"
+COUNT="$(echo "${USERS}" | wc -l)"
 
-if [ -z "${USER}" ]; then
-	echo "User with such name is not found"
-	exit 3
-fi 
+if [ ${COUNT} -eq 1 ]; then
+	CHOSEN_USERNAME="$(echo "${USERS}" | cut -d ':' -f 1)"
+else
+	echo "Please choose which user to add: "
+	echo -e "N: \t USERNAME \t FULL NAME"
 
-echo "${NICK} ${USER}" >> myAddressBook
+	NUMBER=0
+	while read -r USER; do
+		NUMBER=$((NUMBER+1))
+
+		USERNAME="$(echo "${USER}" | cut -d ':' -f 1)"
+		FULLNAME="$(echo "${USER}" | cut -d ':' -f 5)"
+		echo -e "${NUMBER}: \t ${USERNAME} \t ${FULLNAME}"
+		
+	done < <(echo "${USERS}")
+
+	read -p "Please input a number: " CHOSEN
+
+	if [ ${CHOSEN} -lt 1 ] || [ ${CHOSEN} -gt ${COUNT} ]; then
+		echo "Invalid number. Exiting."
+		exit 3
+	fi
+
+	CHOSEN_USERNAME=$(echo "${USERS}" | sed -n "${CHOSEN} p" | cut -d ':' -f 1)
+fi
+
+echo "${CHOSEN_USERNAME} ${NICK}" >> myAddressBook
+echo "Added ${NAME} (username ${CHOSEN_USERNAME}) with nickname ${NICK} to address book."
+
 exit 0
