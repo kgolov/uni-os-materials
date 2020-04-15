@@ -566,9 +566,9 @@ done < <(find ${DIR} -maxdepth 1 -type f)
 
 TODELETE=$(echo "${TODELETE}" | cut -c 2- | sed 's/:/\n/g' | sort | uniq)
 
+if [ -z "${TODELETE}" ]; then exit 0; fi
+
 while read FILE; do
 	rm "${FILE}"
 done < <(echo "${TODELETE}")
-
-exit 0
 ```
