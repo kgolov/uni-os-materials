@@ -169,20 +169,25 @@ dinko s77777
 #!/bin/bash
 
 if [ $# -ne 2 ]; then
-      echo "You must supply an address book and a username"
-      exit 1
+	echo "You must supply an address book and a username"
+	exit 1
 fi
 
 if [ ! -r $1 ]; then
-      echo "Address book is not readable"
-      exit 2
+	echo "Address book is not readable"
+	exit 2
 fi
 
 USER=$(fgrep "$2" $1 | cut -d ' ' -f 2)
 
-# Sending message?
-#write $USER
-#echo "hello"
+if [ -z "${USER}" ]; then
+	echo "There is no such user in the address book"
+	exit 3
+fi
+
+# Sending message
+echo "Hello, ${USER}!" | write "${USER}"
+exit 0
 ```
 
 ### 12. (-- 05-b-4301) Напишете shell script, който автоматично да попълва файла указател от предната задача по подадени аргументи: име на файла указател, пълно име на човека (това, което очакваме да е в /etc/passwd) и избран за него nickname.
