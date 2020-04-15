@@ -449,3 +449,126 @@ fi
 
 exit 0
 ```
+
+### 18. (-- 05-b-5500) Да се напише shell script, който генерира HTML таблица съдържаща описание на потребителите във виртуалката ви.
+
+**Таблицата трябва да има:**
+* заглавен ред с имената нa колоните
+* колони за username, group, login shell, GECKO field (man 5 passwd)
+
+**Пример:**
+```bash
+$ ./passwd-to-html.sh > table.html
+$ cat table.html
+```
+```HTML
+<table>
+  <tr>
+    <th>Username</th>
+    <th>group</th>
+    <th>login shell</th>
+    <th>GECKO</th>
+  </tr>
+  <tr>
+    <td>root</td>
+    <td>root</td>
+    <td>/bin/bash</td>
+    <td>GECKO here</td>
+  </tr>
+  <tr>
+    <td>ubuntu</td>
+    <td>ubuntu</td>
+    <td>/bin/dash</td>
+    <td>GECKO 2</td>
+  </tr>
+</table>
+```
+
+**task-18.sh**
+```bash
+#!/bin/bash
+
+echo "<table>"
+echo -e "\t<tr>"
+echo -e "\t\t<th>Username</th>"
+echo -e "\t\t<th>Group</th>"
+echo -e "\t\t<th>Login shell</th>"
+echo -e "\t\t<th>GECKO</th>"
+echo -e "\t</tr>"
+
+while read USER GROUP GECKO LOGSH; do
+	echo -e "\t<tr>"
+	echo -e "\t\t<td>${USER}</td>"
+	echo -e "\t\t<td>${GROUP}</td>"
+	echo -e "\t\t<td>${LOGSH}</td>"
+	echo -e "\t\t<td>${GECKO}</td>"
+	echo -e "\t</tr>"
+done < <(cut -d ':' -f 1,4,5,7 /etc/passwd | sed 's/:/ /g')
+
+echo "</table>"
+exit 0
+```
+
+### 19. (-- 05-b-6600) Да се напише shell скрипт, който получава единствен аргумент директория и изтрива всички повтарящи се (по съдържание) файлове в дадената директория. Когато има няколко еднакви файла, да се остави само този, чието име е лексикографски преди имената на останалите дублирани файлове.
+
+**Примери:**
+```bash
+$ ls .
+f1 f2 f3 asdf asdf2
+# asdf и asdf2 са еднакви по съдържание, но f1, f2, f3 са уникални
+
+$ ./rmdup .
+$ ls .
+f1 f2 f3 asdf
+# asdf2 е изтрит
+```
+
+**task-19.sh**
+```bash
+#!/bin/bash
+
+if [ $# -ne 1 ]; then
+	echo "You must specify a directory"
+	exit 1
+fi
+
+DIR="${1}"
+
+if [ ! -d "${DIR}" ]; then
+	echo "${DIR} is not a directory"
+	exit 2
+fi
+
+TODELETE=""
+
+while read FILE; do
+	# We want to find copies of this file, but not itself
+	# To optimise find, we will search for files the same size
+	SIZE=$(stat ${FILE} -c "%s")
+
+	while read FOUND; do
+		# Compare the found files
+		if cmp -s "${FILE}" "${FOUND}"; then
+			# Check lexicographical order
+
+			if [ "${FILE}" \> "${FOUND}" ]; then
+				TMP="${FOUND}"
+				FOUND="${FILE}"
+				FILE="${TMP}"
+			fi
+
+			# Delete the second file
+			# However, mark it for deletion later
+			TODELETE+=":${FOUND}"
+		fi
+	done < <(find ${DIR} -maxdepth 1 -type f -size "${SIZE}c" ! -samefile ${FILE})
+done < <(find ${DIR} -maxdepth 1 -type f)
+
+TODELETE=$(echo "${TODELETE}" | cut -c 2- | sed 's/:/\n/g' | sort | uniq)
+
+while read FILE; do
+	rm "${FILE}"
+done < <(echo "${TODELETE}")
+
+exit 0
+```
