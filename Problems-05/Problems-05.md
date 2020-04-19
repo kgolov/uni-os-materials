@@ -572,3 +572,106 @@ while read FILE; do
 	rm "${FILE}"
 done < <(echo "${TODELETE}")
 ```
+
+### 20. (-- 05-b-6800) Да се напише shell скрипт, който получава единствен аргумент директория и отпечатва списък с всички файлове и директории в нея (без скритите). До името на всеки файл да седи размера му в байтове, а до името на всяка директория да седи броят на елементите в нея (общ брой на файловете и директориите, без скритите).
+
+**Бонус: Добавете параметър -a, който указва на скрипта да проверява и скритите файлове и директории.**
+
+Пример:
+```bash
+$ ./list.sh .
+asdf.txt (250 bytes)
+Documents (15 entries)
+empty (0 entries)
+junk (1 entry)
+karh-pishtov.txt (8995979 bytes)
+scripts (10 entries)
+```
+
+**task-20.sh**
+```bash
+#!/bin/bash
+
+if [ $# -eq 0 ] || [ $# -gt 2 ]; then
+	echo "Invalid arguments - you must supply a folder"
+	exit 1
+fi
+
+ALL=""
+DIRNAME=""
+while [ -n "${1}" ]; do
+	if [ "${1}" = "-a" ] && [ -z "${ALL}" ]; then
+		ALL=1
+	elif [ -d "${1}" ] && [ -z "${DIRNAME}" ]; then
+		DIRNAME="${1}"
+	else
+		echo "Invalid arguments"
+		exit 1
+	fi
+
+	shift 1
+done
+
+# Firstly find directories
+while read DIR; do
+	# If the directory is hidden, skip it if we have not received a "-a" flag
+	if (basename "${DIR}" | egrep -q "^\.") && [ -z "${ALL}" ]; then
+		continue
+	fi
+
+	COUNT=""
+	# Find all files and directories in that directory
+	if [ -z "${ALL}" ]; then
+		COUNT=$(find "${DIR}" -mindepth 1 -maxdepth 1 2>/dev/null -printf "%f\n" | egrep "^[^\.]+" | wc -l)
+	else
+		COUNT=$(find "${DIR}" -mindepth 1 -maxdepth 1 2>/dev/null -printf "%f\n" | egrep -v "^\.$" | wc -l)
+	fi
+
+	echo "$(basename "${DIR}") (${COUNT} entries)"
+done < <(find "${DIRNAME}" -mindepth 1 -maxdepth 1 2>/dev/null -type d)
+
+# Then, read files
+while read FILE; do
+	# If the file is hidden, skip it if we have no "-a" flag
+	if (basename "${FILE}" | egrep -q "^.") && [ -z "${ALL}" ]; then
+		continue
+	fi
+
+	SIZE=$(stat ${FILE} -c "%s")
+
+	echo "$(basename "${FILE}") (${SIZE} bytes)"
+done < <(find "${DIRNAME}" -mindepth 1 -maxdepth 1 2>/dev/null -type f)
+
+exit 0
+```
+
+### 21. (-- 05-b-7000) Да се напише shell скрипт, който приема произволен брой аргументи - имена на файлове. Скриптът да прочита от стандартния вход символен низ и за всеки от зададените файлове извежда по подходящ начин на стандартния изход броя на редовете, които съдържат низа.
+
+**NB! Низът може да съдържа интервал.**
+
+**task-21.sh**
+```bash
+#!/bin/bash
+
+if [ $# -eq 0 ]; then
+	echo "You must supply some files to search in"
+	exit 1
+fi
+
+read -p "Please enter a string to search for: " NEEDLE
+
+echo -e "Searching for the string: "\"${NEEDLE}\""\n"
+while [ -n "${1}" ]; do
+	FILE="${1}"
+
+	if [ ! -r "${FILE}" ]; then
+		echo "${FILE} is not readable"
+		continue
+	fi
+
+	COUNT=$(egrep -c -a "${NEEDLE}" "${FILE}")
+	echo -e "${FILE}\tcontains:\t${COUNT} matches"
+
+	shift 1
+done
+```
