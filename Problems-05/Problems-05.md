@@ -675,3 +675,71 @@ while [ -n "${1}" ]; do
 	shift 1
 done
 ```
+
+### 22. (-- 05-b-7100) Да се напише shell скрипт, който приема два параметъра - име на директория и число. Скриптът да извежда на стандартния изход имената на всички обикновени файлове във директорията, които имат размер, по-голям от подаденото число.
+
+**task-22.sh**
+```bash
+#!/bin/bash
+
+if [ $# -ne 2 ]; then
+	echo "You must pass 2 parameters - a directory and a number!"
+	exit 1
+fi
+
+if [ ! -d "${1}" ]; then
+	echo "${1} is not a directory!"
+	exit 2
+fi
+
+if ! (echo "${2}" | egrep -q "^[0-9]+$"); then
+	echo "${2} is not a valid number!"
+	exit 3
+fi
+
+DIRNAME="${1}"
+NUMBER="${2}"
+
+OUTPUT="$(find "${DIRNAME}" -mindepth 1 -maxdepth 1 -type f -size +${NUMBER}c -printf "%f\n")"
+
+if [ -z "${OUTPUT}" ]; then
+	echo "No files found larger than ${NUMBER} bytes."
+else
+	echo "Files larger than ${NUMBER} bytes:"
+	echo "${OUTPUT}"
+fi
+
+exit 0
+```
+
+### 23. (-- 05-b-7200) Да се напише shell скрипт, който приема произволен брой аргументи - имена на файлове или директории. Скриптът да извежда за всеки аргумент подходящо съобщение:
+* дали е файл, който може да прочетем
+* ако е директория - имената на файловете в нея, които имат размер, по-малък от броя на файловете в директорията.
+
+**task-23.sh**
+```bash
+#!/bin/bash
+
+while [ -n "${1}" ]; do
+	PARAM="${1}"
+	if [ -f "${PARAM}" ]; then
+		if [ -r "${PARAM}" ]; then
+			echo "${PARAM} is a readable file"
+		else
+			echo "${PARAM} is a file, but it is not readable"
+		fi
+	elif [ -d "${PARAM}" ]; then
+		COUNT=$(find "${PARAM}" -mindepth 1 -maxdepth 1 -type f | wc -l)
+		echo "${PARAM} is a directory with ${COUNT} files. The following files are bigger than ${COUNT} bytes: "
+
+		OUTPUT="$(find "${PARAM}" -mindepth 1 -maxdepth 1 -type f -size +${COUNT}c -printf "%f\n")"
+		if [ -z "${OUTPUT}" ]; then
+			echo "No files are bigger than ${COUNT} bytes"
+		else
+			echo "${OUTPUT}"
+		fi
+	fi
+
+	shift 1
+done
+```
