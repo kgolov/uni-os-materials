@@ -957,7 +957,35 @@ exit 0
 
 **task-29.sh**
 ```bash
+#!/bin/bash
 
+if [ $# -ne 2 ]; then
+	echo "You need a SOURCE and DESTINATION folder"
+	exit 1
+fi
+
+SOURCE="${1}"
+DEST="${2}"
+
+if [ ! -d "${SOURCE}" ] || [ ! -d "${DEST}" ]; then
+	echo "Supplied parameters are not folders"
+	exit 2
+fi
+
+EXTENSIONS="$(find "${SOURCE}" -type f 2>/dev/null -printf "%f\n" | awk -F '.' '{ print $2 }' | sort | uniq)"
+
+while read EXT; do
+	if [ -z "${EXT}" ]; then
+		continue
+	fi
+
+	mkdir "${DEST}/${EXT}"
+
+	# Can also be done with -exec mv ...
+	find "${SOURCE}" -type f 2>/dev/null -name "*.${EXT}" -exec cp {} "${DEST}/${EXT}" \;
+done < <(echo "${EXTENSIONS}")
+
+exit 0
 ```
 
 ### 30. (-- 05-b-9200) Да се напише shell скрипт, който получава произволен брой аргументи файлове, които изтрива. Ако бъде подадена празна директория, тя бива изтрита. Ако подадения файл е директория с поне 1 файл, тя не се изтрива. За всеки изтрит файл (директория) скриптът добавя ред във log файл с подходящо съобщение.
@@ -978,21 +1006,67 @@ $ cat $RMLOG_FILE
 
 **task-30.sh**
 ```bash
+#!/bin/bash
 
+if [ -z "${RMLOG_FILE}" ]; then
+	echo 'You must set log file location with the environment variable $RMLOG_FILE'
+	exit 1
+fi
+
+if [ -f "${RMLOG_FILE}" ] && [ ! -w "${RMLOG_FILE}" ]; then
+	echo '$RMLOG_FILE must be writable'
+	exit 2
+elif [ ! -f "${RMLOG_FILE}" ]; then
+	touch "${RMLOG_FILE}"
+fi
+
+REC=""
+DATE="$(date +"[%F %H:%M:%S]")"
+
+while [ -n "${1}" ]; do
+	CURR="${1}"
+
+	if [ "${CURR}" = "-r" ]; then
+		REC=1
+	elif [ -f "${CURR}" ]; then
+		rm "${CURR}"
+
+		echo "${DATE} Removed file ${CURR}" >> "${RMLOG_FILE}"
+	elif [ -d "${CURR}" ]; then
+		if [ -z "$(ls -A "${CURR}")" ]; then
+			# Directory is empty
+
+			rmdir "${CURR}"
+
+			echo "${DATE} Removed directory ${CURR}" >> "${RMLOG_FILE}"
+		else
+			# Directory is not empty, check for recursive flag
+			if [ -n "${REC}" ]; then
+				rm -r "${CURR}"
+
+				echo "${DATE} Removed recursively directory ${CURR}" >> "${RMLOG_FILE}"
+			fi
+		fi
+	fi
+
+	shift 1
+done
+
+exit 0
 ```
 
 ### 31. (-- 05-b-9500) (Цветно принтиране) Напишете shell script color_print, който взима два параметъра.
 
 **Първият може да е измежду "-r", "-g" "-b", а вторият е произволен string.
 На командата "echo" може да се подаде код на цвят, който ще оцвети текста в определения цвят.
-В зависимост от първия аргумент, изпринтете втория аргумен в определения цвят:
+В зависимост от първия аргумент, изпринтете втория аргумен в определения цвят:**
 
-"-r" е червено. Кодът на червеното е '\033[0;31m' (echo -e "\033[0;31m This is red")
+**"-r" е червено. Кодът на червеното е '\033[0;31m' (echo -e "\033[0;31m This is red")
 "-g" е зелено. Кодът на зеленото е '\033[0;32m' (echo -e "\033[0;32m This is green")
 "-b" е синьо. Кодът на синьото е '\033[0;34m' (echo -e "\033[0;34m This is blue")
-Ако е подадена друга буква изпишете "Unknown colour", а ако изобщо не е подаден аргумент за цвят, просто изпишете текста.
+Ако е подадена друга буква изпишете "Unknown colour", а ако изобщо не е подаден аргумент за цвят, просто изпишете текста.**
 
-Hint:**
+**Hint:**
 
 В края на скрипта си напишете:
 echo '\033[0m'
@@ -1000,7 +1074,36 @@ echo '\033[0m'
 
 **task-31.sh**
 ```bash
+#!/bin/bash
 
+if [ $# -eq 0 ] || [ $# -gt 2 ]; then
+	echo "Script needs two parameters"
+	exit 1
+elif [ $# -eq 1 ]; then
+	echo "${1}"
+	exit 0
+fi
+
+COLOR="${1}"
+TXT="${2}"
+
+case "${COLOR}" in
+	"-r")
+		echo -e "\033[0;31m${TXT}"
+	;;
+	"-g")
+		echo -e "\033[0;32m${TXT}"
+	;;
+	"-b")
+		echo -e "\033[0;34m${TXT}"
+	;;
+	*)
+		echo "Unknown color"
+	;;
+esac
+
+echo -n -e "\033[0m"
+exit 0
 ```
 
 ### 32. (-- 05-b-9501) Този път програмата ви ще приема само един параметър, който е измежду ("-r", "-b", "-g", "-x"). Напишете shell script, който приема редовете от stdin и ги изпринтва всеки ред с редуващ се цвят. Цветовете вървят RED-GREEN-BLUE и цветът на първия ред се определя от аргумента.  Ако е подаден аргумент "-x", то не трябва да променяте цветовете в терминала (т.е., все едно сте извикали командата cat).
@@ -1009,7 +1112,37 @@ echo '\033[0m'
 
 **task-32.sh**
 ```bash
+#!/bin/bash
 
+if [ $# -ne 1 ]; then
+	echo "You must supply a color only!"
+	exit 1
+fi
+
+COLOR="${1}"
+
+while IFS= read LINE; do
+	case "${COLOR}" in
+        	"-r")
+                	echo -e "\033[0;31m${LINE}"
+									COLOR="-g"
+        	;;
+        	"-g")
+                	echo -e "\033[0;32m${LINE}"
+									COLOR="-b"
+        	;;
+        	"-b")
+                	echo -e "\033[0;34m${LINE}"
+									COLOR="-r"
+        	;;
+        	"-x")
+                	echo "${LINE}"
+        	;;
+	esac
+done
+
+echo -n -e "\033[0m"
+exit 0
 ```
 
 ### 33. (-- 05-b-9600) Да се напише shell скрипт, който получава произволен брой аргументи файлове, които изтрива. Ако бъде подадена празна директория, тя бива изтрита. Ако подадения файл е директория с поне 1 файл, тя не се изтрива.
@@ -1054,7 +1187,52 @@ empty-dir_2018-05-07-18-04-36.tgz
 
 **task-33.sh**
 ```bash
+#!/bin/bash
 
+if [ -z "${BACKUP_DIR}" ]; then
+	echo 'You must supply a backup directory in $BACKUP_DIR'
+	exit 1
+fi
+
+if [ ! -d "${BACKUP_DIR}" ]; then
+	mkdir -p ${BACKUP_DIR}
+fi
+
+REC=""
+DATE="$(date +"%F-%H-%M-%S")"
+
+while [ -n "${1}" ]; do
+	CURR="${1}"
+
+	if [ "${CURR}" = "-r" ]; then
+		REC=1
+	elif [ -f "${CURR}" ]; then
+		tar -cf "${BACKUP_DIR}/$(basename "${CURR}")_${DATE}.gz" "${CURR}"
+
+		rm "${CURR}"
+	elif [ -d "${CURR}" ]; then
+		if [ -z "$(ls -A "${CURR}")" ]; then
+			# Directory is empty
+
+			tar -cf "${BACKUP_DIR}/$(basename "${CURR}")_${DATE}.tgz" "${CURR}"
+
+			rmdir "${CURR}"
+		else
+			# Directory is not empty, check for recursive flag
+			if [ -n "${REC}" ]; then
+				tar -cf "${BACKUP_DIR}/$(basename "${CURR}")_${DATE}.tgz" "${CURR}"
+
+				rm -r "${CURR}"
+			else
+				echo "error: ${CURR} is not empty, will not delete"
+			fi
+		fi
+	fi
+
+	shift 1
+done
+
+exit 0
 ```
 
 ### 34. (-- 05-b-9601) Да се напише shell скрипт, който възстановява изтрити файлове, които имат запазено копие в BACKUP_DIR (от предната задача). При възстановяването файловете да се декомпресират, а директориите да се декомпресират и разархивират.
@@ -1107,5 +1285,70 @@ f1  full-dir/
 
 **task-34.sh**
 ```bash
+#!/bin/bash
 
+if [ -z "${BACKUP_DIR}" ] || [ ! -d "${BACKUP_DIR}" ]; then
+	echo 'You must supply a backup directory in $BACKUP_DIR'
+	exit 1
+fi
+
+if [ $# -eq 0 ] || [ $# -gt 2 ]; then
+	echo "Wrong number of arguments"
+	exit 2
+fi
+
+function display_file {
+	FNAME="$(echo "${1}" | cut -d '_' -f 1)"
+	DATE="$(echo "${1}" | cut -d '_' -f 2 | cut -d '.' -f 1 |\
+	       	awk -F '-' '{ print "("$1"/"$2"/"$3" "$4":"$5":"$6")" }')"
+
+	echo -e "${FNAME}\t${DATE}"
+}
+
+RESTORE_IN="."
+
+if [ $# -eq 2 ]; then
+	RESTORE_IN="${2}"
+fi
+
+if [ "${1}" = "-l" ]; then
+	# List files that can be restored
+	while read FOUND; do
+		display_file "${FOUND}"
+	done < <(find "${BACKUP_DIR}" -name "*gz" -printf "%f\n" | sort -t '.' -k 2)
+	exit 0
+fi
+
+TO_RESTORE="${1}"
+FOUND="$(find "${BACKUP_DIR}" -name "${TO_RESTORE}*" -printf "%f\n")"
+
+if [ -z "${FOUND}" ]; then
+	echo "No such file or directory found"
+	exit 3
+fi
+
+CNT="$(echo "${FOUND}" | wc -l)"
+
+if [ ${CNT} -gt 1 ]; then
+	NUM=1
+	while read OPTION; do
+		echo "(${NUM}) $(display_file "${OPTION}")"
+		NUM=$((NUM+1))
+	done < <(echo "${FOUND}")
+	read -p "choose file (1-${CNT}): " CHOSEN
+
+	if [ ${CHOSEN} -lt 1 ] || [ ${CHOSEN} -gt ${CNT} ]; then
+		echo "Please enter a valid number! Exiting."
+		exit 4
+	fi
+
+	TO_RESTORE="$(echo "${FOUND}" | head -n ${CHOSEN} | tail -n 1)"
+else
+	TO_RESTORE="${FOUND}"
+fi
+
+tar -xf "${BACKUP_DIR}/${TO_RESTORE}" -C "${RESTORE_IN}"
+rm "${BACKUP_DIR}/${TO_RESTORE}"
+
+exit 0
 ```
