@@ -7,4 +7,5 @@
 4. Упражнение 5. [Скриптове](Problems-05/Problems-05.md)
 
 ### 2. Материали от подготовка за контролни
-1. [Контролно 1](Exam-Problems/Exam-Problem-Solutions.md)
+* [Контролно 1, 2 - Задачи](Exam-Problems/Exam-Problems.pdf)
+* [Контролно 1, 2 - Решения](Exam-Problems/README.md)
