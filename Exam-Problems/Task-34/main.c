@@ -75,7 +75,15 @@ int main(int argc, char* argv[]) {
 	uint16_t last_offset = 0x0000;
 	while ( read(fd2, &index, sizeof(index)) > 0 ) {
 		// Jump to the part of the file specified in OFFSET
-		lseek(fd1, index.offset, SEEK_SET);
+		if (lseek(fd1, index.offset, SEEK_SET) < 0) {
+			int old_errno = errno;
+			close(fd1);
+			close(fd2);
+			close(fd3);
+			close(fd4);
+			errno = old_errno;
+			err(6, "Error while seeking file");
+		}
 
 		// Read f1 character by character
 		char ch;
@@ -86,14 +94,14 @@ int main(int argc, char* argv[]) {
 			close(fd3);
 			close(fd4);
 			errno = old_errno;
-			err(5, "Error reading from file");
+			err(7, "Error reading from file");
 		}
 		// Check if first letter is a capital letter?
 		if (ch <= 'A' || ch >= 'Z') {
 			// It is not, discard this sequence
 			continue;
 		}
-		
+
 		// Try to write character to f2
 		if (write(fd3, &ch, 1) <= 0) {
 			int old_errno = errno;
@@ -102,7 +110,7 @@ int main(int argc, char* argv[]) {
 			close(fd3);
 			close(fd4);
 			errno = old_errno;
-			err(6, "Error writing to file");
+			err(8, "Error writing to file");
 		}
 
 		// Continue with the rest of the string, while we reach the specified LENGTH
@@ -117,7 +125,7 @@ int main(int argc, char* argv[]) {
 				close(fd3);
 				close(fd4);
 				errno = old_errno;
-				err(5, "Error reading from file");
+				err(7, "Error reading from file");
 			}
 			bytes_read += try_read;
 
@@ -129,7 +137,7 @@ int main(int argc, char* argv[]) {
 				close(fd3);
 				close(fd4);
 				errno = old_errno;
-				err(6, "Error writing to file");
+				err(8, "Error writing to file");
 			}
 		}
 
@@ -147,7 +155,7 @@ int main(int argc, char* argv[]) {
 			close(fd3);
 			close(fd4);
 			errno = old_errno;
-			err(6, "Error writing to file");
+			err(8, "Error writing to file");
 		}
 
 		// Update last_offset with the bytes written in this iteration
@@ -158,7 +166,7 @@ int main(int argc, char* argv[]) {
 	close(fd1);
 	close(fd2);
 	close(fd3);
-	close(fd4);	
+	close(fd4);
 
 	exit(0);
 }
