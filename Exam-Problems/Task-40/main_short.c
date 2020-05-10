@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+// No error checking!
 int main(int argc, char* argv[]) {
 	if (argc < 3) {
 		errx(1, "Not enough parameters");
@@ -31,21 +32,17 @@ int main(int argc, char* argv[]) {
 		
 		ssize_t bytes_read = 0;
 		char buff;
-		while ( read(0, &buff, sizeof(buff)) > 0 ) {
+		while ( read(0, &buff, sizeof(buff)) > 0) {
 			bytes_read += sizeof(buff);
 
 			if (buff == '\n') {
 				bytes_read = 0;
-				if(write(1, &buff, sizeof(buff)) != sizeof(buff)) {
-				       err(7, "Error writing to stdout");
-				}	       
+				write(1, &buff, sizeof(buff));
 				continue;
 			}
 
 			if (bytes_read >= n && bytes_read <= m) {
-				if(write(1, &buff, sizeof(buff)) != sizeof(buff)) {
-					err(7, "Error writing to stdout");
-				}
+				write(1, &buff, sizeof(buff));
 			}
 		}
 	}
@@ -83,24 +80,18 @@ int main(int argc, char* argv[]) {
 				column++;
 
 				if (column > n && column <= m) {
-					if(write(1, &buff, sizeof(buff)) != sizeof(buff)) {
-						err(7, "Error writing to stdout");
-					}
+					write(1, &buff, sizeof(buff));
 				}
 				continue;
 			}
 			else if (buff == '\n') {
 				column = 1;
-				if(write(1, &buff, sizeof(buff)) != sizeof(buff)) {
-					err(7, "Error writing to stdout");
-				}
+				write(1, &buff, sizeof(buff));
 				continue;
 			}
 
 			if (column >= n && column <= m) {
-				if(write(1, &buff, sizeof(buff)) != sizeof(buff)) {
-					err(7, "Error writing to stdout");
-				}
+				write(1, &buff, sizeof(buff));
 			}
 		}
 	}
